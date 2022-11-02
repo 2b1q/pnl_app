@@ -101,7 +101,7 @@ export const Pnl = () => {
     toast({
       title: `${address} Step: ${step} Period: ${period} ${duration(startTime, endTime)} sec`,
       status: 'success',
-      duration: 3000,
+      duration: 5000,
       isClosable: true,
     })
 
@@ -123,7 +123,7 @@ export const Pnl = () => {
       {
         getValue: (datum) => datum.usd,
         elementType: 'area',
-        showDatumElements: true,
+        // showDatumElements: true,
       },
     ],
     [],
