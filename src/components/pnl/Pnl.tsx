@@ -55,7 +55,7 @@ export const Pnl = () => {
   const toast = useToast()
 
   useEffect(() => {
-    if (!pnlFormData.frames) {
+    if (!pnlFormData.frames && !isFetching) {
       fetchPnl(pnlFormData.address, pnlFormData.step, pnlFormData.period)
     }
   })
@@ -69,6 +69,8 @@ export const Pnl = () => {
 
   async function fetchPnl(address: string, step: PnlStep, period: PnlPeriod): Promise<void> {
     let pnlData: PnlData | undefined
+    // update form state
+    setPnlFormData({ address, step, period, frames: undefined })
 
     setFetch(true)
 
@@ -121,7 +123,7 @@ export const Pnl = () => {
       {
         getValue: (datum) => datum.usd,
         elementType: 'area',
-        // showDatumElements: true,
+        showDatumElements: true,
       },
     ],
     [],
@@ -129,7 +131,7 @@ export const Pnl = () => {
 
   return (
     <VStack w='100%' h='100%'>
-      <Box w='100%' h='70%' p={1} borderWidth='1px' borderRadius='lg'>
+      <Box w='100%' h='70%' borderWidth='1px' borderRadius='lg'>
         <Chart
           options={{
             data: pnlSeries,
@@ -138,7 +140,7 @@ export const Pnl = () => {
           }}
         />
       </Box>
-      <Box w='100%' h='30%' p={4}>
+      <Box w='100%' h='30%' p={3}>
         <Wrap>
           <WrapItem>
             <Box p={2} display='flex' alignItems='baseline' fontSize='md'>
@@ -187,8 +189,9 @@ export const Pnl = () => {
             <Box p={2} display='flex' alignItems='baseline' fontSize='md'>
               Address
             </Box>
-            <Center w='400px'>
+            <Center w='420px'>
               <Input
+                size='md'
                 placeholder={pnlFormData.address}
                 onChange={(element) =>
                   setPnlFormData({ ...pnlFormData, address: element.target.value })
