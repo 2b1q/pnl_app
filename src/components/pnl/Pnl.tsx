@@ -8,6 +8,7 @@ import {
   Center,
   Wrap,
   WrapItem,
+  Spinner,
 } from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
 import { AxisOptions, Chart } from 'react-charts'
@@ -37,6 +38,8 @@ type Series = {
   data: PnlFrameData[]
 }
 
+const duration = (t1: Date, t2: Date): number => Math.round((Number(t2) - Number(t1)) / 1000)
+
 export const Pnl = () => {
   const pnlClient = new PnlClient()
 
@@ -47,11 +50,11 @@ export const Pnl = () => {
       data: [{ date: new Date(), usd: 0 }],
     },
   ])
+  const [isFetching, setFetch] = useState<boolean>(false)
 
   const toast = useToast()
 
   useEffect(() => {
-    console.log('pnlData', pnlFormData)
     if (!pnlFormData.frames) {
       fetchPnl(pnlFormData.address, pnlFormData.step, pnlFormData.period)
     }
@@ -67,11 +70,22 @@ export const Pnl = () => {
   async function fetchPnl(address: string, step: PnlStep, period: PnlPeriod): Promise<void> {
     let pnlData: PnlData | undefined
 
+    setFetch(true)
+
+    const startTime = new Date()
+    let endTime: Date
+
     try {
       pnlData = await pnlClient.getPnl(address, step, period)
+      setFetch(false)
     } catch (error) {
+      setFetch(false)
+
+      endTime = new Date()
+      console.error(error)
+
       toast({
-        title: `${JSON.stringify(error)}`,
+        title: `Fetch PNL error. ${duration(startTime, endTime)}sec`,
         status: 'error',
         duration: 2000,
         isClosable: true,
@@ -80,14 +94,17 @@ export const Pnl = () => {
 
     if (!pnlData) return
 
+    endTime = new Date()
+
     toast({
-      title: `update PNL for ${address} Step: ${step} Period: ${period}`,
+      title: `${address} Step: ${step} Period: ${period} ${duration(startTime, endTime)} sec`,
       status: 'success',
-      duration: 2000,
+      duration: 3000,
       isClosable: true,
     })
-    setPnlFormData({ address, step, period, frames: pnlData })
 
+    // update state
+    setPnlFormData({ address, step, period, frames: pnlData })
     setPnlSeries([{ label: `${address} PNL`, data: pnlDataToSeries(pnlData) }])
   }
 
@@ -191,6 +208,9 @@ export const Pnl = () => {
                 Update PNL
               </Button>
             </Center>
+          </WrapItem>
+          <WrapItem>
+            <Center w='40px'>{isFetching ? <Spinner /> : ''}</Center>
           </WrapItem>
         </Wrap>
       </Box>
