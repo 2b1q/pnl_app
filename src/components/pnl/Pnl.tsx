@@ -1,4 +1,14 @@
-import { Box, Button, Input, Select, useToast, VStack } from '@chakra-ui/react'
+import {
+  Box,
+  Button,
+  Input,
+  Select,
+  useToast,
+  VStack,
+  Center,
+  Wrap,
+  WrapItem,
+} from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
 import { AxisOptions, Chart } from 'react-charts'
 import { PnlClient, PnlData, PnlPeriod, PnlStep } from './pnl-client'
@@ -55,7 +65,21 @@ export const Pnl = () => {
   }
 
   async function fetchPnl(address: string, step: PnlStep, period: PnlPeriod): Promise<void> {
-    const pnlData = await pnlClient.getPnl(address, step, period)
+    let pnlData: PnlData | undefined
+
+    try {
+      pnlData = await pnlClient.getPnl(address, step, period)
+    } catch (error) {
+      toast({
+        title: `${JSON.stringify(error)}`,
+        status: 'error',
+        duration: 2000,
+        isClosable: true,
+      })
+    }
+
+    if (!pnlData) return
+
     toast({
       title: `update PNL for ${address} Step: ${step} Period: ${period}`,
       status: 'success',
@@ -88,7 +112,7 @@ export const Pnl = () => {
 
   return (
     <VStack w='100%' h='100%'>
-      <Box w='100%' h='70%' p={5} m={1}>
+      <Box w='100%' h='70%' p={1} borderWidth='1px' borderRadius='lg'>
         <Chart
           options={{
             data: pnlSeries,
@@ -97,59 +121,78 @@ export const Pnl = () => {
           }}
         />
       </Box>
-      <Box p={3}>
-        <Button
-          variant='solid'
-          colorScheme='blue'
-          size='md'
-          onClick={() => fetchPnl(pnlFormData.address, pnlFormData.step, pnlFormData.period)}
-        >
-          {' '}
-          Update PNL
-        </Button>
-      </Box>
       <Box w='100%' h='30%' p={4}>
-        <Box w='10%'>
-          {/* '1h' | '1D' | '1W' | '1M' */}
-          <Select
-            placeholder='Step'
-            onChange={(element) =>
-              setPnlFormData({ ...pnlFormData, step: element.target.value as PnlStep })
-            }
-          >
-            <option value='1h'>Hour</option>
-            <option value='1D'>Day</option>
-            <option value='1W'>Week</option>
-            <option value='1M'>Month</option>
-          </Select>
-        </Box>
-        <Box w='10%'>
-          {/* '1M' | '2M' | '3M' | '4M' | '5M' | '6M' | '1Y' | '2Y' | 'ALL' */}
-          <Select
-            placeholder='Period'
-            onChange={(element) =>
-              setPnlFormData({ ...pnlFormData, period: element.target.value as PnlPeriod })
-            }
-          >
-            <option value='1M'>1M</option>
-            <option value='2M'>2M</option>
-            <option value='3M'>3M</option>
-            <option value='4M'>4M</option>
-            <option value='5M'>5M</option>
-            <option value='6M'>6M</option>
-            <option value='1Y'>1Y</option>
-            <option value='2Y'>2Y</option>
-            <option value='ALL'>ALL</option>
-          </Select>
-        </Box>
-        <Box w='30%'>
-          <Input
-            placeholder={pnlFormData.address}
-            onChange={(element) =>
-              setPnlFormData({ ...pnlFormData, address: element.target.value })
-            }
-          />
-        </Box>
+        <Wrap>
+          <WrapItem>
+            <Box p={2} display='flex' alignItems='baseline' fontSize='md'>
+              PNL step
+            </Box>
+            <Center w='120px'>
+              {/* '1h' | '1D' | '1W' | '1M' */}
+              <Select
+                placeholder='Step'
+                onChange={(element) =>
+                  setPnlFormData({ ...pnlFormData, step: element.target.value as PnlStep })
+                }
+              >
+                <option value='1h'>Hour</option>
+                <option value='1D'>Day</option>
+                <option value='1W'>Week</option>
+                <option value='1M'>Month</option>
+              </Select>
+            </Center>
+          </WrapItem>
+          <WrapItem>
+            <Box p={2} display='flex' alignItems='baseline' fontSize='md'>
+              PNL period
+            </Box>
+            <Center w='120px'>
+              {/* '1M' | '2M' | '3M' | '4M' | '5M' | '6M' | '1Y' | '2Y' | 'ALL' */}
+              <Select
+                placeholder='Period'
+                onChange={(element) =>
+                  setPnlFormData({ ...pnlFormData, period: element.target.value as PnlPeriod })
+                }
+              >
+                <option value='1M'>1M</option>
+                <option value='2M'>2M</option>
+                <option value='3M'>3M</option>
+                <option value='4M'>4M</option>
+                <option value='5M'>5M</option>
+                <option value='6M'>6M</option>
+                <option value='1Y'>1Y</option>
+                <option value='2Y'>2Y</option>
+                <option value='ALL'>ALL</option>
+              </Select>
+            </Center>
+          </WrapItem>
+          <WrapItem>
+            <Box p={2} display='flex' alignItems='baseline' fontSize='md'>
+              Address
+            </Box>
+            <Center w='400px'>
+              <Input
+                placeholder={pnlFormData.address}
+                onChange={(element) =>
+                  setPnlFormData({ ...pnlFormData, address: element.target.value })
+                }
+              />
+            </Center>
+          </WrapItem>
+          <WrapItem>
+            <Center w='120px'>
+              <Button
+                variant='solid'
+                colorScheme='blue'
+                size='md'
+                onClick={() => fetchPnl(pnlFormData.address, pnlFormData.step, pnlFormData.period)}
+              >
+                {' '}
+                Update PNL
+              </Button>
+            </Center>
+          </WrapItem>
+        </Wrap>
       </Box>
     </VStack>
   )
