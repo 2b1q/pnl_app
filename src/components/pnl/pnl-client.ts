@@ -12,7 +12,7 @@ export class PnlClient {
   client: AxiosInstance | undefined
   constructor() {
     this.client = axios.create({
-      baseURL: 'https://hyper-api.plasma.finance/v1/address/',
+      baseURL: process.env.REACT_APP_API_URL || 'https://hyper-api.plasma.finance/v1/address/',
       headers: { 'x-plasma-api-key': process.env.REACT_APP_API_KEY },
     })
   }

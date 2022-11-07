@@ -13,6 +13,7 @@ import {
 import React, { useState, useEffect } from 'react'
 import { AxisOptions, Chart } from 'react-charts'
 import { PnlClient, PnlData, PnlPeriod, PnlStep } from './pnl-client'
+import { AxiosError } from 'axios'
 
 interface IPnlData {
   address: string
@@ -51,11 +52,12 @@ export const Pnl = () => {
     },
   ])
   const [isFetching, setFetch] = useState<boolean>(false)
+  const [error, setError] = useState<boolean>(false)
 
   const toast = useToast()
 
   useEffect(() => {
-    if (!pnlFormData.frames && !isFetching) {
+    if (!pnlFormData.frames && !isFetching && !error) {
       fetchPnl(pnlFormData.address, pnlFormData.step, pnlFormData.period)
     }
   })
@@ -80,11 +82,25 @@ export const Pnl = () => {
     try {
       pnlData = await pnlClient.getPnl(address, step, period)
       setFetch(false)
+      setError(false)
     } catch (error) {
+      console.error(error)
+
+      setError(true)
       setFetch(false)
 
       endTime = new Date()
-      console.error(error)
+      
+      if((error as AxiosError)?.response?.status === 401){
+        toast({
+          title: 'Update REACT_APP_API_KEY. Auth error',
+          status: 'error',
+          duration: 2000,
+          isClosable: true,
+        })
+
+        return;
+      }
 
       toast({
         title: `Fetch PNL error. ${duration(startTime, endTime)}sec`,
